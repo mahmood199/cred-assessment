@@ -12,13 +12,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
@@ -37,7 +36,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.credcomposeassignment.data.models.CategoryItem
 import com.example.credcomposeassignment.data.models.Section
-import com.example.credcomposeassignment.data.models.SectionProperty
 import com.example.credcomposeassignment.feature.common.GridItem
 import com.example.credcomposeassignment.feature.common.ListItem
 import com.example.credcomposeassignment.ui.theme.CredComposeAssignmentTheme
@@ -81,13 +79,14 @@ fun CategoryPageUI(
                         }
                     )
 
-                    CategoryItems(
+                    ListItems(
                         state = state,
                         sections = sections,
-                        itemSelected = { item ->
-                            viewModel.selectItem(item)
-                        },
-                    )
+                    ) { item ->
+                        viewModel.selectItem(item)
+
+                    }
+
                 }
                 Button(
                     onClick = {
@@ -101,6 +100,27 @@ fun CategoryPageUI(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun ListItems(
+    state: CategoryViewState,
+    sections: List<Section>,
+    itemSelected: (CategoryItem) -> Unit
+) {
+    LazyColumn(
+        contentPadding = PaddingValues(
+            vertical = 12.dp,
+        ),
+    ) {
+        CategoryItems(
+            state = state,
+            sections = sections,
+            itemSelected = { item ->
+                itemSelected(item)
+            },
+        )
     }
 }
 
@@ -146,48 +166,40 @@ fun CategoryHeader(
     }
 }
 
-@Composable
-fun CategoryItems(
+fun LazyListScope.CategoryItems(
     state: CategoryViewState,
     sections: List<Section>,
     itemSelected: (CategoryItem) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val childGridState = rememberLazyGridState()
+    when (state.layoutType) {
+        LayoutType.Grid -> GridSetup(
+            sections, itemSelected, modifier
+        )
 
-    LazyColumn(
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(top = 20.dp, bottom = 40.dp)
-    ) {
-
+        LayoutType.Linear -> LinearSetup(
+            sections, itemSelected
+        )
     }
 }
 
-@Composable
-fun SectionItems(
-    layoutType: LayoutType,
-    sectionProperty: SectionProperty,
-    childGridState: LazyGridState,
+fun LazyListScope.LinearSetup(
+    sections: List<Section>,
     itemSelected: (CategoryItem) -> Unit
 ) {
-    when (layoutType) {
-        LayoutType.Grid -> {
-            GridArrangement(
-                title = sectionProperty.title,
-                categoryItems = sectionProperty.categories,
-                gridState = childGridState,
-                itemSelected = itemSelected
-            )
-        }
-
-        LayoutType.Linear -> {
-            LinearArrangement(
-                sectionProperty = sectionProperty,
-                itemSelected = itemSelected
-            )
-        }
+    LinearArrangement(
+        sections = sections
+    ) { categoryItem ->
+        itemSelected(categoryItem)
     }
+}
+
+fun GridSetup(
+    sections: List<Section>,
+    itemSelected: (CategoryItem) -> Unit,
+    modifier: Modifier = Modifier
+) {
+
 }
 
 @Composable
@@ -219,19 +231,30 @@ fun GridArrangement(
     }
 }
 
-@Composable
-fun LinearArrangement(
-    sectionProperty: SectionProperty,
+fun LazyListScope.LinearArrangement(
+    sections: List<Section>,
     itemSelected: (CategoryItem) -> Unit
 ) {
-    Text(text = sectionProperty.title, fontWeight = FontWeight.ExtraBold)
-    sectionProperty.categories.forEachIndexed { index, categoryItem ->
-        ListItem(
-            categoryProperty = categoryItem.categoryProperty,
-            onClick = {
-                itemSelected(categoryItem)
+    sections.forEachIndexed { index, section ->
+        item(key = section.id + index) {
+            Text(
+                text = section.sectionProperty.title,
+                fontWeight = FontWeight.ExtraBold
+            )
+        }
+        items(
+            items = section.sectionProperty.categories,
+            key = { categoryItem ->
+                categoryItem.id + index
             }
-        )
+        ) { categoryItem ->
+            ListItem(
+                categoryProperty = categoryItem.categoryProperty,
+                onClick = {
+                    itemSelected(categoryItem)
+                }
+            )
+        }
     }
 }
 

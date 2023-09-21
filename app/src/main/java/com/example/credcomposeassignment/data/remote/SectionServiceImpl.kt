@@ -5,7 +5,6 @@ import com.example.credcomposeassignment.data.models.CategoryProperty
 import com.example.credcomposeassignment.data.models.Section
 import com.example.credcomposeassignment.data.models.SectionProperty
 import com.example.credcomposeassignment.data.models.SectionResponse
-import kotlinx.coroutines.delay
 
 class SectionServiceImpl : SectionService {
 
@@ -18,7 +17,7 @@ class SectionServiceImpl : SectionService {
             listOf(
                 Section(
                     id = "money_section",
-                    sectionProperties = SectionProperty(
+                    sectionProperty = SectionProperty(
                         title = "MONEY",
                         categories = listOf(
                             CategoryItem(
@@ -50,7 +49,7 @@ class SectionServiceImpl : SectionService {
                 ),
                 Section(
                     id = "bills_section",
-                    sectionProperties = SectionProperty(
+                    sectionProperty = SectionProperty(
                         title = "BILLS",
                         categories = listOf(
                             CategoryItem(
@@ -82,7 +81,7 @@ class SectionServiceImpl : SectionService {
                 ),
                 Section(
                     id = "benefits_section",
-                    sectionProperties = SectionProperty(
+                    sectionProperty = SectionProperty(
                         title = "BENEFITS",
                         categories = listOf(
                             CategoryItem(
