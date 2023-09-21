@@ -27,6 +27,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -58,54 +59,64 @@ fun CategoryPageUI(
         closeCategorySelection()
     }
 
-    AnimatedContent(
-        targetState = state.isLoading,
-        label = "Loader Animation",
-        modifier = modifier.fillMaxSize(),
-    ) {
-        if (it) {
-            Box(modifier = Modifier.fillMaxSize()) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+    Scaffold(
+        topBar = {
+            if (state.isLoading.not()) {
+                CategoryHeader(
+                    state = state,
+                    switchLayout = {
+                        viewModel.updateLayout(state.layoutType)
+                    },
+                    closeCategorySelection = {
+                        closeCategorySelection()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
-        } else {
-            Box(modifier = Modifier.fillMaxSize()) {
-                Column(
-                    modifier = Modifier
-                        .padding(12.dp),
-                ) {
-                    CategoryHeader(
-                        state = state,
-                        switchLayout = {
-                            viewModel.updateLayout(state.layoutType)
-                        },
-                        closeCategorySelection = {
-                            closeCategorySelection()
-                        }
-                    )
-
-                    ListItems(
-                        state = state,
-                        sections = sections,
-                    ) { item ->
-                        viewModel.selectItem(item)
-
-                    }
-                }
+        },
+        bottomBar = {
+            if (state.isLoading.not()) {
                 Button(
                     onClick = {
                         closeCategorySelection()
                     },
                     modifier = Modifier
-                        .padding(12.dp)
-                        .align(alignment = Alignment.BottomCenter)
                         .fillMaxWidth()
+                        .padding(horizontal = 32.dp)
                 ) {
                     Text(text = "Done with Selection")
                 }
             }
         }
+    ) { paddingValues ->
+        AnimatedContent(
+            targetState = state.isLoading,
+            label = "Loader Animation",
+            modifier = modifier
+                .fillMaxSize()
+                .padding(
+                    top = paddingValues.calculateTopPadding(),
+                    bottom = paddingValues.calculateBottomPadding()
+                ),
+        ) {
+            if (it) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                }
+            } else {
+                Column {
+                    ListItems(
+                        state = state,
+                        sections = sections,
+                    ) { item ->
+                        viewModel.selectItem(item)
+                    }
+                }
+            }
+        }
     }
 }
+
 
 @Composable
 fun ListItems(
@@ -116,20 +127,26 @@ fun ListItems(
     val lazyListScope = rememberLazyListState()
     val lazyGridScope = rememberLazyGridState()
 
-    val paddingValues = remember {
+    val linearPaddingValues = remember {
         PaddingValues(
-            top = 12.dp,
-            bottom = 40.dp,
-            start = 8.dp,
-            end = 8.dp
+            vertical = 12.dp,
+            horizontal = 20.dp
         )
     }
+
+    val gridPaddingValues = remember {
+        PaddingValues(
+            vertical = 12.dp,
+            horizontal = 20.dp
+        )
+    }
+
 
     when (state.layoutType) {
         LayoutType.Linear -> {
             LazyColumn(
                 state = lazyListScope,
-                contentPadding = paddingValues,
+                contentPadding = linearPaddingValues,
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 LinearSetup(
@@ -144,7 +161,7 @@ fun ListItems(
         LayoutType.Grid -> {
             LazyVerticalGrid(
                 state = lazyGridScope,
-                contentPadding = paddingValues,
+                contentPadding = gridPaddingValues,
                 columns = GridCells.Fixed(3),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -163,12 +180,13 @@ fun ListItems(
 fun CategoryHeader(
     state: CategoryViewState,
     switchLayout: () -> Unit,
-    closeCategorySelection: () -> Unit
+    closeCategorySelection: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(horizontal = 0.dp)
+        modifier = modifier.padding(12.dp)
     ) {
         Column(
             modifier = Modifier.weight(1f),
@@ -220,7 +238,8 @@ fun LazyListScope.LinearArrangement(
         item(key = section.id + index) {
             Text(
                 text = section.sectionProperty.title,
-                fontWeight = FontWeight.ExtraBold
+                fontWeight = FontWeight.ExtraBold,
+                modifier = Modifier.padding(top = 20.dp)
             )
         }
         items(

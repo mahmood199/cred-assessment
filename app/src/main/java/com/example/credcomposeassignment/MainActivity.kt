@@ -34,12 +34,14 @@ class MainActivity : ComponentActivity() {
         val navController = rememberNavController()
 
         NavHost(navController = navController, startDestination = Screens.LANDING_PAGE) {
-            composable(Screens.LANDING_PAGE) {
-                LandingPageUI(viewModel = categoryViewModel) {
-                    navController.navigate(Screens.CATEGORY_PAGE)
-                }
+            composable(route = Screens.LANDING_PAGE) {
+                LandingPageUI(
+                    viewModel = categoryViewModel, navigateToCategoryScreen = {
+                        navController.navigate(Screens.CATEGORY_PAGE)
+                    }
+                )
             }
-            composable(Screens.CATEGORY_PAGE) {
+            composable(route = Screens.CATEGORY_PAGE) {
                 CategoryPageUI(
                     viewModel = categoryViewModel,
                     closeCategorySelection = {
