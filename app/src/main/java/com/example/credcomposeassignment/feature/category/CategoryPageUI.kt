@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -44,6 +46,7 @@ import com.example.credcomposeassignment.data.models.Section
 import com.example.credcomposeassignment.feature.common.GridItem
 import com.example.credcomposeassignment.feature.common.ListItem
 import com.example.credcomposeassignment.ui.theme.CredComposeAssignmentTheme
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 @Composable
 fun CategoryPageUI(
@@ -54,6 +57,11 @@ fun CategoryPageUI(
 
     val sections by viewModel.sections.collectAsState()
     val state by viewModel.state.collectAsState()
+
+    val systemUiController = rememberSystemUiController()
+    systemUiController.setSystemBarsColor(
+        color = MaterialTheme.colorScheme.surface
+    )
 
     BackHandler(enabled = true) {
         closeCategorySelection()
@@ -70,7 +78,9 @@ fun CategoryPageUI(
                     closeCategorySelection = {
                         closeCategorySelection()
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .statusBarsPadding(),
                 )
             }
         },
@@ -87,17 +97,17 @@ fun CategoryPageUI(
                     Text(text = "Done with Selection")
                 }
             }
-        }
+        },
+        modifier = modifier
+            .fillMaxSize()
+            .navigationBarsPadding(),
     ) { paddingValues ->
         AnimatedContent(
             targetState = state.isLoading,
             label = "Loader Animation",
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxSize()
-                .padding(
-                    top = paddingValues.calculateTopPadding(),
-                    bottom = paddingValues.calculateBottomPadding()
-                ),
+                .padding(paddingValues),
         ) {
             if (it) {
                 Box(modifier = Modifier.fillMaxSize()) {

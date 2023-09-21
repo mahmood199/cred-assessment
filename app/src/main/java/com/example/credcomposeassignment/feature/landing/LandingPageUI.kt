@@ -1,6 +1,7 @@
 package com.example.credcomposeassignment.feature.landing
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,18 +31,26 @@ import com.example.credcomposeassignment.data.models.CategoryItem
 import com.example.credcomposeassignment.feature.category.CategoryViewModel
 import com.example.credcomposeassignment.feature.common.ListItem
 import com.example.credcomposeassignment.ui.theme.CredComposeAssignmentTheme
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 @Composable
 fun LandingPageUI(
     viewModel: CategoryViewModel,
-    navigateToCategoryScreen: () -> Unit
+    navigateToCategoryScreen: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
 
     val selectedItems by viewModel.selectedCategories.collectAsState()
 
+    val systemUiController = rememberSystemUiController()
+    systemUiController.setSystemBarsColor(
+        color = MaterialTheme.colorScheme.surface
+    )
+
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        topBar = {},
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.onSurface),
         bottomBar = {
             Button(
                 onClick = {
@@ -64,10 +73,7 @@ fun LandingPageUI(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(
-                        top = paddingValues.calculateTopPadding(),
-                        bottom = paddingValues.calculateBottomPadding()
-                    )
+                    .padding(paddingValues)
             ) {
                 AnimatedContent(
                     targetState = selectedItems.size == 0,
@@ -105,6 +111,13 @@ fun SelectedItems(
             horizontal = 12.dp
         )
     ) {
+        item(key = "Selected Items Header") {
+            Text(
+                text = "Selected Categories",
+                fontWeight = FontWeight.ExtraBold,
+                style = MaterialTheme.typography.headlineMedium,
+            )
+        }
         items(
             items = selectedItems,
             key = { categoryItem ->
@@ -122,8 +135,10 @@ fun SelectedItems(
 fun LandingPageUIPreview() {
     val viewModel = CategoryViewModel()
     CredComposeAssignmentTheme {
-        LandingPageUI(viewModel = viewModel) {
-
-        }
+        LandingPageUI(
+            viewModel = viewModel,
+            modifier = Modifier,
+            navigateToCategoryScreen = {}
+        )
     }
 }
