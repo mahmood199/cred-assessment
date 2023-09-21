@@ -21,7 +21,7 @@ fun GridItem(
     onClick: () -> Unit
 ) {
     Column(
-        verticalArrangement = Arrangement.spacedBy(4.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.clickable {
             onClick()
         }
@@ -34,7 +34,7 @@ fun GridItem(
                 alignment = Alignment.Center,
                 contentScale = ContentScale.FillBounds
             ),
-            modifier = Modifier.size(80.dp)
+            modifier = Modifier.size(100.dp)
         )
         Text(text = categoryProperty.name, textAlign = TextAlign.Center)
     }

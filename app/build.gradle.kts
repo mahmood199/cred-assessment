@@ -74,4 +74,5 @@ dependencies {
     implementation(libs.glide)
 
     implementation(libs.kotlinx.collections.immutable)
+    implementation(libs.accompanist.system.ui.controller)
 }
