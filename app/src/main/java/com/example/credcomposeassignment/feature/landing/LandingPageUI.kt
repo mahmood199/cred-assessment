@@ -124,8 +124,10 @@ fun SelectedItems(
                 categoryItem.id
             }
         ) { categoryItem ->
-            ListItem(categoryProperty = categoryItem.categoryProperty) {
-            }
+            ListItem(
+                categoryProperty = categoryItem.categoryProperty,
+                onClick = {}
+            )
         }
     }
 }

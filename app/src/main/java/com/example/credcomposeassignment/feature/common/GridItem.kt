@@ -18,11 +18,12 @@ import com.skydoves.landscapist.glide.GlideImage
 @Composable
 fun GridItem(
     categoryProperty: CategoryProperty,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.clickable {
+        modifier = modifier.clickable {
             onClick()
         }
     ) {
