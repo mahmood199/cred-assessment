@@ -2,6 +2,8 @@ package com.example.credcomposeassignment.feature.category
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,16 +15,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
@@ -107,11 +105,13 @@ fun CategoryPageUI(
             label = "Loader Animation",
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues),
+                .padding(paddingValues = paddingValues),
         ) {
             if (it) {
                 Box(modifier = Modifier.fillMaxSize()) {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center)
+                    )
                 }
             } else {
                 Column {
@@ -134,14 +134,12 @@ fun ListItems(
     sections: List<Section>,
     itemSelected: (CategoryItem) -> Unit
 ) {
-    val lazyListScope = rememberLazyListState()
-    val lazyGridScope = rememberLazyGridState()
+    val lazyGridScope1 = rememberLazyGridState()
+    val lazyGridScope2 = rememberLazyGridState()
 
-    val linearPaddingValues = remember {
-        PaddingValues(
-            vertical = 12.dp,
-            horizontal = 20.dp
-        )
+    val columns = when (state.layoutType) {
+        LayoutType.Grid -> 3
+        LayoutType.Linear -> 1
     }
 
     val gridPaddingValues = remember {
@@ -151,37 +149,21 @@ fun ListItems(
         )
     }
 
-
-    when (state.layoutType) {
-        LayoutType.Linear -> {
-            LazyColumn(
-                state = lazyListScope,
-                contentPadding = linearPaddingValues,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                LinearSetup(
-                    sections = sections,
-                    itemSelected = { item ->
-                        itemSelected(item)
-                    },
-                )
-            }
-        }
-
-        LayoutType.Grid -> {
-            LazyVerticalGrid(
-                state = lazyGridScope,
-                contentPadding = gridPaddingValues,
-                columns = GridCells.Fixed(3),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                GridSetup(
-                    sections = sections,
-                ) { item ->
-                    itemSelected(item)
-                }
-            }
+    LazyVerticalGrid(
+        state = if (columns == 3) lazyGridScope1
+        else lazyGridScope2,
+        contentPadding = gridPaddingValues,
+        columns = GridCells.Fixed(
+            columns
+        ),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        GridSetup(
+            sections = sections,
+            columns = columns
+        ) { item ->
+            itemSelected(item)
         }
     }
 }
@@ -229,63 +211,28 @@ fun CategoryHeader(
     }
 }
 
-fun LazyListScope.LinearSetup(
-    sections: List<Section>,
-    itemSelected: (CategoryItem) -> Unit
-) {
-    LinearArrangement(
-        sections = sections
-    ) { categoryItem ->
-        itemSelected(categoryItem)
-    }
-}
-
-fun LazyListScope.LinearArrangement(
-    sections: List<Section>,
-    itemSelected: (CategoryItem) -> Unit
-) {
-    sections.forEachIndexed { index, section ->
-        item(key = section.id + index) {
-            Text(
-                text = section.sectionProperty.title,
-                fontWeight = FontWeight.ExtraBold,
-                modifier = Modifier.padding(top = 20.dp)
-            )
-        }
-        items(
-            items = section.sectionProperty.categories,
-            key = { categoryItem ->
-                categoryItem.id + index
-            }
-        ) { categoryItem ->
-            ListItem(
-                categoryProperty = categoryItem.categoryProperty,
-                onClick = {
-                    itemSelected(categoryItem)
-                }
-            )
-        }
-    }
-}
-
 fun LazyGridScope.GridSetup(
     sections: List<Section>,
+    columns: Int,
     itemSelected: (CategoryItem) -> Unit
 ) {
     GridArrangement(
+        columns = columns,
         sections = sections
     ) { categoryItem ->
         itemSelected(categoryItem)
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 fun LazyGridScope.GridArrangement(
+    columns: Int,
     sections: List<Section>,
     itemSelected: (CategoryItem) -> Unit
 ) {
     sections.forEachIndexed { index, section ->
         item(key = section.id + index, span = {
-            GridItemSpan(3)
+            GridItemSpan(currentLineSpan = columns)
         }) {
             Text(
                 text = section.sectionProperty.title,
@@ -299,12 +246,33 @@ fun LazyGridScope.GridArrangement(
                 categoryItem.id + index
             }
         ) { categoryItem ->
-            GridItem(
-                categoryProperty = categoryItem.categoryProperty,
-                onClick = {
-                    itemSelected(categoryItem)
+            Crossfade(
+                targetState = columns,
+                label = "Label",
+                modifier = Modifier.animateItemPlacement()
+            ) {
+                when (it) {
+                    1 -> {
+                        ListItem(
+                            categoryProperty = categoryItem.categoryProperty,
+                            onClick = {
+                                itemSelected(categoryItem)
+                            },
+                            modifier = Modifier.padding(top = 16.dp)
+                        )
+                    }
+
+                    3 -> {
+                        GridItem(
+                            categoryProperty = categoryItem.categoryProperty,
+                            onClick = {
+                                itemSelected(categoryItem)
+                            },
+                            modifier = Modifier.padding(top = 12.dp)
+                        )
+                    }
                 }
-            )
+            }
         }
     }
 }

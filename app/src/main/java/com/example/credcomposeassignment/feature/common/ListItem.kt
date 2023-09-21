@@ -21,10 +21,11 @@ import com.skydoves.landscapist.glide.GlideImage
 @Composable
 fun ListItem(
     categoryProperty: CategoryProperty,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clickable {
                 onClick()
@@ -40,7 +41,7 @@ fun ListItem(
                 alignment = Alignment.Center,
                 contentScale = ContentScale.FillBounds
             ),
-            modifier = Modifier.size(48.dp)
+            modifier = Modifier.size(100.dp)
         )
         Column(
             verticalArrangement = Arrangement.spacedBy(4.dp),
