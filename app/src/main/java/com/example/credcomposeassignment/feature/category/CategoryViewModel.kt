@@ -20,28 +20,28 @@ class CategoryViewModel : ViewModel() {
     private val _state = MutableStateFlow(CategoryViewState())
     val state = _state.asStateFlow()
 
-    private val _selectedCategories = MutableStateFlow(mutableListOf<CategoryItem>())
+    private val _selectedCategories = MutableStateFlow(listOf<CategoryItem>())
     val selectedCategories = _selectedCategories.asStateFlow()
 
     init {
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true)
-            _sections.value = dataSource.getCategories().section + dataSource.getCategories().section
+            _sections.value = dataSource.getCategories().section
             _state.value = _state.value.copy(isLoading = false)
         }
     }
 
-    fun updateLayout(layoutType: LayoutType) {
+    fun updateLayout(gridSpan: GridSpan) {
         _state.value = _state.value.copy(
-            layoutType = when(layoutType) {
-                LayoutType.Grid -> LayoutType.Linear
-                LayoutType.Linear -> LayoutType.Grid
+            gridSpan = when(gridSpan) {
+                GridSpan.Triple -> GridSpan.Single
+                GridSpan.Single -> GridSpan.Triple
             }
         )
     }
 
     fun selectItem(item: CategoryItem) {
-        val originalList = _selectedCategories.value
+        val originalList = _selectedCategories.value.toMutableList()
         if(_selectedCategories.value.contains(item)) {
             originalList.remove(item)
         } else {

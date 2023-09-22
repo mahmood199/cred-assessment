@@ -20,7 +20,6 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
@@ -33,7 +32,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -54,7 +52,10 @@ fun CategoryPageUI(
 ) {
 
     val sections by viewModel.sections.collectAsState()
+    val selectedItems by viewModel.selectedCategories.collectAsState()
     val state by viewModel.state.collectAsState()
+
+    println("ashar: $selectedItems")
 
     val systemUiController = rememberSystemUiController()
     systemUiController.setSystemBarsColor(
@@ -71,7 +72,7 @@ fun CategoryPageUI(
                 CategoryHeader(
                     state = state,
                     switchLayout = {
-                        viewModel.updateLayout(state.layoutType)
+                        viewModel.updateLayout(state.gridSpan)
                     },
                     closeCategorySelection = {
                         closeCategorySelection()
@@ -118,6 +119,7 @@ fun CategoryPageUI(
                     ListItems(
                         state = state,
                         sections = sections,
+                        selectedItems = selectedItems,
                     ) { item ->
                         viewModel.selectItem(item)
                     }
@@ -132,39 +134,21 @@ fun CategoryPageUI(
 fun ListItems(
     state: CategoryViewState,
     sections: List<Section>,
+    selectedItems: List<CategoryItem>,
     itemSelected: (CategoryItem) -> Unit
 ) {
-    val lazyGridScope1 = rememberLazyGridState()
-    val lazyGridScope2 = rememberLazyGridState()
-
-    val columns = when (state.layoutType) {
-        LayoutType.Grid -> 3
-        LayoutType.Linear -> 1
-    }
-
-    val gridPaddingValues = remember {
-        PaddingValues(
-            vertical = 12.dp,
-            horizontal = 20.dp
-        )
-    }
-
     LazyVerticalGrid(
-        state = if (columns == 3) lazyGridScope1
-        else lazyGridScope2,
-        contentPadding = gridPaddingValues,
-        columns = GridCells.Fixed(
-            columns
-        ),
+        contentPadding = PaddingValues(vertical = 12.dp, horizontal = 20.dp),
+        columns = GridCells.Fixed(state.gridSpan.columns),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        GridSetup(
+        gridSetup(
+            gridSpan = state.gridSpan,
             sections = sections,
-            columns = columns
-        ) { item ->
-            itemSelected(item)
-        }
+            selectedItems = selectedItems,
+            itemSelected = itemSelected,
+        )
     }
 }
 
@@ -196,7 +180,7 @@ fun CategoryHeader(
             )
         }
         Switch(
-            checked = state.layoutType == LayoutType.Linear,
+            checked = state.gridSpan == GridSpan.Single,
             onCheckedChange = {
                 switchLayout()
             }
@@ -211,35 +195,24 @@ fun CategoryHeader(
     }
 }
 
-fun LazyGridScope.GridSetup(
-    sections: List<Section>,
-    columns: Int,
-    itemSelected: (CategoryItem) -> Unit
-) {
-    GridArrangement(
-        columns = columns,
-        sections = sections
-    ) { categoryItem ->
-        itemSelected(categoryItem)
-    }
-}
-
 @OptIn(ExperimentalFoundationApi::class)
-fun LazyGridScope.GridArrangement(
-    columns: Int,
+fun LazyGridScope.gridSetup(
+    gridSpan: GridSpan,
     sections: List<Section>,
+    selectedItems: List<CategoryItem>,
     itemSelected: (CategoryItem) -> Unit
 ) {
     sections.forEachIndexed { index, section ->
         item(key = section.id + index, span = {
-            GridItemSpan(currentLineSpan = columns)
+            GridItemSpan(currentLineSpan = gridSpan.columns)
         }) {
             Text(
                 text = section.sectionProperty.title,
                 fontWeight = FontWeight.ExtraBold,
-                modifier = Modifier.padding(top = 12.dp)
+                modifier = Modifier.padding(top = 12.dp).animateItemPlacement()
             )
         }
+
         items(
             items = section.sectionProperty.categories,
             key = { categoryItem ->
@@ -247,14 +220,15 @@ fun LazyGridScope.GridArrangement(
             }
         ) { categoryItem ->
             Crossfade(
-                targetState = columns,
-                label = "Label",
+                targetState = gridSpan,
+                label = "CategoryItemCrossfadeAnimation",
                 modifier = Modifier.animateItemPlacement()
             ) {
                 when (it) {
-                    1 -> {
+                    GridSpan.Single -> {
                         ListItem(
                             categoryProperty = categoryItem.categoryProperty,
+                            isSelected = categoryItem in selectedItems,
                             onClick = {
                                 itemSelected(categoryItem)
                             },
@@ -262,9 +236,10 @@ fun LazyGridScope.GridArrangement(
                         )
                     }
 
-                    3 -> {
+                    GridSpan.Triple -> {
                         GridItem(
                             categoryProperty = categoryItem.categoryProperty,
+                            isSelected = selectedItems.find { item -> item.id == categoryItem.id } != null,
                             onClick = {
                                 itemSelected(categoryItem)
                             },

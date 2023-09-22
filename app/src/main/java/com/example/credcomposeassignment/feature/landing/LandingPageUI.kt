@@ -102,7 +102,7 @@ fun LandingPageUI(
 
 @Composable
 fun SelectedItems(
-    selectedItems: MutableList<CategoryItem>
+    selectedItems: List<CategoryItem>
 ) {
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(20.dp),
@@ -126,6 +126,7 @@ fun SelectedItems(
         ) { categoryItem ->
             ListItem(
                 categoryProperty = categoryItem.categoryProperty,
+                isSelected = false,
                 onClick = {}
             )
         }

@@ -5,22 +5,19 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.credcomposeassignment.data.models.CategoryProperty
-import com.skydoves.landscapist.ImageOptions
-import com.skydoves.landscapist.glide.GlideImage
 
 @Composable
 fun ListItem(
     categoryProperty: CategoryProperty,
+    isSelected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -33,16 +30,7 @@ fun ListItem(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        GlideImage(
-            imageModel = {
-                categoryProperty.iconUrl
-            },
-            imageOptions = ImageOptions(
-                alignment = Alignment.Center,
-                contentScale = ContentScale.FillBounds
-            ),
-            modifier = Modifier.size(100.dp)
-        )
+        CategoryImage(categoryProperty, isSelected)
         Column(
             verticalArrangement = Arrangement.spacedBy(4.dp),
             modifier = Modifier.weight(1f)
